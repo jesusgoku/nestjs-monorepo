@@ -11,20 +11,26 @@ import {
 import {
   Controller,
   Get,
+  Logger,
   MessageEvent,
   Param,
   ParseIntPipe,
   Query,
   Sse,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { interval, map, Observable, pipe } from 'rxjs';
 import { AppService } from './app.service';
+import { PostsListEvent, POSTS_LIST_EVENT } from './events/posts-list.event';
 
 @Controller()
 export class AppController {
+  private readonly logger: Logger = new Logger(AppController.name);
+
   constructor(
     private readonly appService: AppService,
     private readonly jsonPlaceHolderService: JsonPlaceHolderService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Get()
@@ -77,6 +83,12 @@ export class AppController {
   @Get('posts')
   async getPosts(@Query() query: PaginatedResourceOptions): Promise<any[]> {
     const { data } = await this.jsonPlaceHolderService.getPosts(query);
+
+    this.logger.log(`Emit: ${POSTS_LIST_EVENT}`);
+    this.eventEmitter.emit(
+      POSTS_LIST_EVENT,
+      new PostsListEvent({ payload: data }),
+    );
 
     return data;
   }
