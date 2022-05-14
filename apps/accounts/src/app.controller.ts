@@ -9,6 +9,7 @@ import {
   UserDto,
 } from '@app/json-place-holder';
 import {
+  CacheInterceptor,
   CACHE_MANAGER,
   Controller,
   Get,
@@ -19,6 +20,7 @@ import {
   ParseIntPipe,
   Query,
   Sse,
+  UseInterceptors,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
@@ -27,6 +29,7 @@ import { AppService } from './app.service';
 import { PostsListEvent, POSTS_LIST_EVENT } from './events/posts-list.event';
 
 @Controller()
+@UseInterceptors(CacheInterceptor)
 export class AppController {
   private readonly logger: Logger = new Logger(AppController.name);
 
@@ -45,26 +48,7 @@ export class AppController {
 
   @Get('users/:id')
   async getUser(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-    this.logger.log(`get user with id ${id}`);
-
-    const key = `users:id:${id}`;
-
-    this.logger.log(`retry obtain user from cache with key: ${key}`);
-
-    const fromCache = await this.cacheManager.get<UserDto>(key);
-
-    if (fromCache) {
-      this.logger.log(`user found in cache with key: ${key}`);
-
-      return fromCache;
-    }
-
-    this.logger.log(`user not found in cache with key: ${key}`);
-
     const { data } = await this.jsonPlaceHolderService.getUser(id);
-
-    this.logger.log(`user with id ${id} store in cache with key: ${key}`);
-    this.cacheManager.set(key, data, { ttl: 3600 });
 
     return data;
   }
