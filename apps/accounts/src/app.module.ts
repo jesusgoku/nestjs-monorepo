@@ -7,10 +7,12 @@ import {
   Module,
 } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-ioredis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsListener } from './listeners/posts.listener';
+import { RefreshCacheSchedule } from './schedules/refresh-cache.schedule';
 
 @Module({
   imports: [
@@ -19,12 +21,13 @@ import { PostsListener } from './listeners/posts.listener';
       store: redisStore,
       enableOfflineQueue: false,
     }),
+    ScheduleModule.forRoot(),
     JsonPlaceHolderModule.forRoot({
       baseUrl: 'https://jsonplaceholder.typicode.com',
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, PostsListener],
+  providers: [AppService, PostsListener, RefreshCacheSchedule],
 })
 export class AppModule {
   private readonly logger: Logger = new Logger(AppModule.name);
