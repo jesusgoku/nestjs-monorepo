@@ -28,9 +28,10 @@ import { Cache } from 'cache-manager';
 import { interval, map, Observable, pipe } from 'rxjs';
 import { AppService } from './app.service';
 import { PostsListEvent, POSTS_LIST_EVENT } from './events/posts-list.event';
+import { HttpCacheInterceptor } from './interceptors/http-cache.interceptor';
 
 @Controller()
-@UseInterceptors(CacheInterceptor)
+@UseInterceptors(HttpCacheInterceptor)
 export class AppController {
   private readonly logger: Logger = new Logger(AppController.name);
 
