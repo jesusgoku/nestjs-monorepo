@@ -1,4 +1,5 @@
 import { JsonPlaceHolderModule } from '@app/json-place-holder';
+import { BullModule } from '@nestjs/bull';
 import {
   CacheModule,
   CACHE_MANAGER,
@@ -9,9 +10,12 @@ import {
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-ioredis';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsListener } from './listeners/posts.listener';
+import { NotificationsProcessor } from './processors/notifications.processor';
+import { NotificationSchedule } from './schedules/notifications.schedule';
 import { RefreshCacheSchedule } from './schedules/refresh-cache.schedule';
 
 @Module({
@@ -22,12 +26,24 @@ import { RefreshCacheSchedule } from './schedules/refresh-cache.schedule';
       enableOfflineQueue: false,
     }),
     ScheduleModule.forRoot(),
+    BullModule.forRoot({}),
+    BullModule.registerQueue({
+      name: 'notifications',
+      // Require build with tsc
+      // processors: [join(__dirname, './processor.js')],
+    }),
     JsonPlaceHolderModule.forRoot({
       baseUrl: 'https://jsonplaceholder.typicode.com',
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, PostsListener, RefreshCacheSchedule],
+  providers: [
+    AppService,
+    PostsListener,
+    RefreshCacheSchedule,
+    NotificationSchedule,
+    NotificationsProcessor,
+  ],
 })
 export class AppModule {
   private readonly logger: Logger = new Logger(AppModule.name);

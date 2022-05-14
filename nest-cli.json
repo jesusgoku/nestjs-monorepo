@@ -6,6 +6,7 @@
   "root": "apps/accounts",
   "compilerOptions": {
     "webpack": true,
+    "deleteOutDir": true,
     "tsConfigPath": "apps/accounts/tsconfig.app.json"
   },
   "projects": {
