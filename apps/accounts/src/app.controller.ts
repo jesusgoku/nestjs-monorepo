@@ -10,6 +10,7 @@ import {
 } from '@app/json-place-holder';
 import {
   CacheInterceptor,
+  CacheTTL,
   CACHE_MANAGER,
   Controller,
   Get,
@@ -47,6 +48,7 @@ export class AppController {
   }
 
   @Get('users/:id')
+  @CacheTTL(3600)
   async getUser(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
     const { data } = await this.jsonPlaceHolderService.getUser(id);
 
